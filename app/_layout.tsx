@@ -3,12 +3,16 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { useEffect } from "react";
+import * as Progress from "react-native-progress";
+import { useEffect, useState } from "react";
 import "react-native-reanimated";
 
 import { useColorScheme } from "@/hooks/useColorScheme";
-import * as Application from "expo-application";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { StyleSheet, View } from "react-native";
+import { UserService } from "@/api/UserService";
+import uuid from "react-native-uuid";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -47,13 +51,6 @@ export default function RootLayout() {
     if (loaded) {
       SplashScreen.hideAsync();
     }
-
-    // TODO: handle login logic
-    // (async () => {
-    //   console.log(Application.getAndroidId());
-    //   const iosId = await Application.getIosIdForVendorAsync();
-    //   console.log(iosId);
-    // })();
   }, [loaded]);
 
   if (!loaded) {
@@ -69,12 +66,46 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
+  const { mutate } = UserService.useLogin();
+  const [isAuth, setIsAuth] = useState(false);
+
+  useEffect(() => {
+    AsyncStorage.getItem("device_id").then((value) => {
+      if (value) {
+        setIsAuth(true);
+      } else {
+        const myUuid = uuid.v4();
+        mutate(myUuid, {
+          onSuccess: (data) => {
+            Promise.all([
+              AsyncStorage.setItem("device_id", data.device_id),
+              AsyncStorage.setItem("user_id", data.id),
+            ]).then(() => setIsAuth(true));
+          },
+        });
+      }
+    });
+  }, []);
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      </Stack>
+      {isAuth ? (
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        </Stack>
+      ) : (
+        <View style={styles.progressWrapper}>
+          <Progress.Circle size={100} indeterminate={true} borderWidth={10} />
+        </View>
+      )}
     </ThemeProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  progressWrapper: {
+    flex: 1,
+    justifyContent: "center",
+    marginHorizontal: "auto",
+  },
+});
