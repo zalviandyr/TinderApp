@@ -16,8 +16,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { IUser } from "@/types/user";
 import { useUserStore } from "@/store/useUserStore";
 
-// TODO: Cronjob in laravel
-
 export {
   // Catch any errors thrown by the Layout component.
   ErrorBoundary,
