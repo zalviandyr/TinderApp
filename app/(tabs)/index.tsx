@@ -1,4 +1,4 @@
-import { AntDesign, Feather, Fontisto } from "@expo/vector-icons";
+import { AntDesign, Feather, Fontisto, Ionicons } from "@expo/vector-icons";
 import React, { useRef, useState } from "react";
 import { View, Text, StyleSheet, Dimensions, useColorScheme, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -124,7 +124,10 @@ export default function TinderScreen() {
                     <Text style={styles.name}>
                       {card.name}, {card.age}
                     </Text>
-                    <Text style={styles.distance}>{card.distance} 거리</Text>
+                    <View style={styles.distanceWrapper}>
+                      <Ionicons name="location-outline" size={18} style={styles.distanceIcon} />
+                      <Text style={styles.distance}>{card.distance} 거리</Text>
+                    </View>
                   </View>
                 </ImageBackground>
               </View>
@@ -216,6 +219,12 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#fff",
     marginBottom: 4,
+  },
+  distanceWrapper: {
+    flexDirection: "row",
+  },
+  distanceIcon: {
+    color: "#fff",
   },
   distance: {
     fontSize: 16,
