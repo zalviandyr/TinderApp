@@ -7,11 +7,16 @@ import CardStack from "react-native-card-stack-swiper";
 import { PersonService } from "@/api/PersonService";
 import PersonCard from "@/components/PersonCard";
 import PersonAction from "@/components/PersonAction";
+import { useUserStore } from "@/store/useUserStore";
+import { ActionService } from "@/api/ActionService";
 
 export default function TinderScreen() {
   const { data } = PersonService.useGetPersons();
   const profiles = data ?? [];
   const colorScheme = useColorScheme();
+  const user = useUserStore((state) => state.user);
+  const { mutate: saveAction } = ActionService.useSave();
+  const { mutate: deleteAction } = ActionService.useDelete();
 
   const swiperRef = useRef<CardStack | null>(null);
   const [index, setIndex] = useState(0);
@@ -27,7 +32,15 @@ export default function TinderScreen() {
     setSwipeHistory((prev) => [...prev, { index: cardIndex, direction: "left" }]);
     const card = profiles[cardIndex];
     if (card) {
-      console.log("Disliked:", card);
+      if (user) {
+        saveAction({
+          personId: card.id,
+          userId: user.id,
+          status: "DISLIKE",
+        });
+
+        console.log("Disliked:", card);
+      }
     }
   };
 
@@ -35,7 +48,15 @@ export default function TinderScreen() {
     setSwipeHistory((prev) => [...prev, { index: cardIndex, direction: "right" }]);
     const card = profiles[cardIndex];
     if (card) {
-      console.log("Liked:", card);
+      if (user) {
+        saveAction({
+          personId: card.id,
+          userId: user.id,
+          status: "LIKE",
+        });
+
+        console.log("Liked:", card);
+      }
     }
   };
 
@@ -56,6 +77,15 @@ export default function TinderScreen() {
         swiperRef.current?.goBackFromLeft();
       } else {
         swiperRef.current?.goBackFromRight();
+      }
+
+      // delete last person
+      const lastPerson = profiles[lastSwipe.index];
+      if (user) {
+        deleteAction({
+          personId: lastPerson.id,
+          userId: user.id,
+        });
       }
 
       setIndex((current) => Math.max(current - 1, 0));

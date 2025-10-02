@@ -13,6 +13,14 @@ import { StyleSheet, View } from "react-native";
 import { UserService } from "@/api/UserService";
 import uuid from "react-native-uuid";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { IUser } from "@/types/user";
+import { useUserStore } from "@/store/useUserStore";
+
+// TODO: progress bar in tinder
+// TODO: swagger in laravel
+// TODO: like oppent view
+// TODO: relation in RDB
+// TODO: Cronjob in laravel
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -69,9 +77,23 @@ function RootLayoutNav() {
   const { mutate } = UserService.useLogin();
   const [isAuth, setIsAuth] = useState(false);
 
+  const setUser = useUserStore((state) => state.setUser);
+  const getUser = async (): Promise<IUser | null> => {
+    const deviceId = await AsyncStorage.getItem("device_id");
+    const userId = await AsyncStorage.getItem("user_id");
+
+    if (deviceId && userId) {
+      return { device_id: deviceId, id: userId };
+    }
+
+    return null;
+  };
+
   useEffect(() => {
-    AsyncStorage.getItem("device_id").then((value) => {
+    getUser().then((value) => {
       if (value) {
+        setUser(value);
+
         setIsAuth(true);
       } else {
         const myUuid = uuid.v4();
@@ -80,7 +102,10 @@ function RootLayoutNav() {
             Promise.all([
               AsyncStorage.setItem("device_id", data.device_id),
               AsyncStorage.setItem("user_id", data.id),
-            ]).then(() => setIsAuth(true));
+            ]).then(() => {
+              setUser(data);
+              setIsAuth(true);
+            });
           },
         });
       }
