@@ -5,7 +5,6 @@ import AntDesign from "@expo/vector-icons/AntDesign";
 
 import Colors from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
-import { useClientOnlyValue } from "@/hooks/useClientOnlyValue";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
