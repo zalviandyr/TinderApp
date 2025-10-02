@@ -16,10 +16,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { IUser } from "@/types/user";
 import { useUserStore } from "@/store/useUserStore";
 
-// TODO: progress bar in tinder
-// TODO: swagger in laravel
-// TODO: like oppent view
-// TODO: relation in RDB
 // TODO: Cronjob in laravel
 
 export {

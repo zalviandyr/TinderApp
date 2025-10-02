@@ -59,7 +59,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-evenly",
     paddingHorizontal: 32,
-    paddingVertical: 15,
   },
   actionButton: {
     width: 64,

@@ -9,6 +9,7 @@ import PersonCard from "@/components/PersonCard";
 import PersonAction from "@/components/PersonAction";
 import { useUserStore } from "@/store/useUserStore";
 import { ActionService } from "@/api/ActionService";
+import StepperProgressBar from "@/components/StepperProgresBar";
 
 export default function TinderScreen() {
   const { data } = PersonService.useGetPersons();
@@ -110,11 +111,18 @@ export default function TinderScreen() {
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: themeColors.background }]}>
       <View style={[styles.container, { backgroundColor: themeColors.background }]}>
+        {/* Header */}
         <View style={styles.header}>
           <Fontisto name="tinder" size={32} color={themeColors.tint} />
           <Text style={[styles.title, { color: themeColors.tint }]}>tinder</Text>
         </View>
 
+        {/* Stepper di atas CardStack */}
+        <View style={styles.stepperWrapper}>
+          <StepperProgressBar steps={profiles.length} currentStep={index + 1} />
+        </View>
+
+        {/* CardStack */}
         <CardStack
           ref={swiperRef}
           style={styles.cardStack}
@@ -136,6 +144,7 @@ export default function TinderScreen() {
           ))}
         </CardStack>
 
+        {/* Action buttons */}
         <PersonAction
           {...{ canUndo, hasRemainingCards, handleUndo, handleDislikePress, handleLikePress }}
         />
@@ -143,6 +152,7 @@ export default function TinderScreen() {
     </SafeAreaView>
   );
 }
+
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
@@ -162,9 +172,14 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginLeft: 5,
   },
+  stepperWrapper: {
+    paddingHorizontal: 20,
+    zIndex: 1,
+  },
   cardStack: {
     flex: 1,
     alignItems: "center",
+    marginTop: -45,
   },
   noMoreCards: {
     width: Dimensions.get("window").width * 0.9,
