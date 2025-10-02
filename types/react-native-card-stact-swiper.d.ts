@@ -9,6 +9,9 @@ declare module "react-native-card-stack-swiper" {
     renderNoMoreCards?: () => React.ReactNode;
     secondCardScale?: number;
     secondCardAlpha?: number;
+    verticalSwipe?: boolean;
+    horizontalSwipe?: boolean;
+    loop?: boolean;
     disableTopSwipe?: boolean;
     disableBottomSwipe?: boolean;
     disableLeftSwipe?: boolean;
@@ -25,6 +28,15 @@ declare module "react-native-card-stack-swiper" {
     style?: ViewStyle;
   }
 
-  export default class CardStack extends React.Component<CardStackProps> {}
+  export default class CardStack extends React.Component<CardStackProps> {
+    swipeLeft(duration?: number): void;
+    swipeRight(duration?: number): void;
+    swipeTop(duration?: number): void;
+    swipeBottom(duration?: number): void;
+    goBackFromLeft(): void;
+    goBackFromRight(): void;
+    goBackFromTop(): void;
+    goBackFromBottom(): void;
+  }
   export class Card extends React.Component<CardProps> {}
 }

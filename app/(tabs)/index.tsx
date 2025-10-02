@@ -1,6 +1,6 @@
-import { Fontisto } from "@expo/vector-icons";
+import { AntDesign, Feather, Fontisto } from "@expo/vector-icons";
 import React, { useRef, useState } from "react";
-import { View, Text, StyleSheet, Dimensions, useColorScheme } from "react-native";
+import { View, Text, StyleSheet, Dimensions, useColorScheme, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Colors from "../../constants/Colors";
 import CardStack, { Card } from "react-native-card-stack-swiper";
@@ -24,9 +24,69 @@ const profiles = [
 ];
 
 export default function TinderScreen() {
+  const swiperRef = useRef<CardStack | null>(null);
   const [index, setIndex] = useState(0);
+  const [swipeHistory, setSwipeHistory] = useState<
+    Array<{ index: number; direction: "left" | "right" }>
+  >([]);
   const colorScheme = useColorScheme();
   const themeColors = colorScheme === "dark" ? Colors.dark : Colors.light;
+  const hasRemainingCards = index < profiles.length;
+  const canUndo = swipeHistory.length > 0;
+
+  const handleSwipeLeft = (cardIndex: number) => {
+    setSwipeHistory((prev) => [...prev, { index: cardIndex, direction: "left" }]);
+    const card = profiles[cardIndex];
+    if (card) {
+      console.log("Disliked:", card);
+    }
+  };
+
+  const handleSwipeRight = (cardIndex: number) => {
+    setSwipeHistory((prev) => [...prev, { index: cardIndex, direction: "right" }]);
+    const card = profiles[cardIndex];
+    if (card) {
+      console.log("Liked:", card);
+    }
+  };
+
+  const handleUndo = () => {
+    if (!canUndo) {
+      return;
+    }
+
+    setSwipeHistory((prevHistory) => {
+      if (prevHistory.length === 0) {
+        return prevHistory;
+      }
+
+      const updatedHistory = prevHistory.slice(0, -1);
+      const lastSwipe = prevHistory[prevHistory.length - 1];
+
+      if (lastSwipe.direction === "left") {
+        swiperRef.current?.goBackFromLeft();
+      } else {
+        swiperRef.current?.goBackFromRight();
+      }
+
+      setIndex((current) => Math.max(current - 1, 0));
+      return updatedHistory;
+    });
+  };
+
+  const handleDislikePress = () => {
+    if (!hasRemainingCards) {
+      return;
+    }
+    swiperRef.current?.swipeLeft();
+  };
+
+  const handleLikePress = () => {
+    if (!hasRemainingCards) {
+      return;
+    }
+    swiperRef.current?.swipeRight();
+  };
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: themeColors.background }]}>
@@ -37,7 +97,10 @@ export default function TinderScreen() {
         </View>
 
         <CardStack
+          ref={swiperRef}
           style={styles.cardStack}
+          secondCardScale={0.95}
+          secondCardAlpha={0.85}
           disableBottomSwipe
           disableTopSwipe
           renderNoMoreCards={() => (
@@ -46,8 +109,8 @@ export default function TinderScreen() {
             </View>
           )}
           onSwiped={(cardIndex) => setIndex(cardIndex + 1)}
-          onSwipedRight={(cardIndex) => console.log("Liked:", profiles[cardIndex])}
-          onSwipedLeft={(cardIndex) => console.log("Disliked:", profiles[cardIndex])}
+          onSwipedRight={handleSwipeRight}
+          onSwipedLeft={handleSwipeLeft}
         >
           {profiles.map((card) => (
             <Card key={card.id} style={styles.cardWrapper}>
@@ -55,7 +118,7 @@ export default function TinderScreen() {
                 <ImageBackground
                   source={{ uri: card.image }}
                   style={styles.imageBackground}
-                  cachePolicy={"disk"}
+                  cachePolicy="disk"
                 >
                   <View style={styles.cardContent}>
                     <Text style={styles.name}>
@@ -68,6 +131,40 @@ export default function TinderScreen() {
             </Card>
           ))}
         </CardStack>
+
+        <View style={styles.actions}>
+          <TouchableOpacity
+            style={[styles.actionButton, styles.undoButton, !canUndo && styles.buttonDisabled]}
+            onPress={handleUndo}
+            disabled={!canUndo}
+          >
+            <Feather name="rotate-ccw" size={26} color={canUndo ? "#f5a623" : "#999"} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.actionButton,
+              styles.dislikeButton,
+              !hasRemainingCards && styles.buttonDisabled,
+            ]}
+            onPress={handleDislikePress}
+            disabled={!hasRemainingCards}
+          >
+            <AntDesign name="close" size={30} color={hasRemainingCards ? "#ff6b6b" : "#bbb"} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.actionButton,
+              styles.likeButton,
+              !hasRemainingCards && styles.buttonDisabled,
+            ]}
+            onPress={handleLikePress}
+            disabled={!hasRemainingCards}
+          >
+            <AntDesign name="heart" size={28} color={hasRemainingCards ? "#2bd97c" : "#bbb"} />
+          </TouchableOpacity>
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -138,5 +235,40 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: "#333",
     fontWeight: "600",
+  },
+  actions: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-evenly",
+    paddingHorizontal: 32,
+    paddingVertical: 15,
+  },
+  actionButton: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 8 },
+    shadowRadius: 12,
+    elevation: 4,
+  },
+  likeButton: {
+    borderWidth: 2,
+    borderColor: "#2bd97c",
+  },
+  dislikeButton: {
+    borderWidth: 2,
+    borderColor: "#ff6b6b",
+  },
+  undoButton: {
+    borderWidth: 2,
+    borderColor: "#f5a623",
+  },
+  buttonDisabled: {
+    opacity: 0.6,
   },
 });
