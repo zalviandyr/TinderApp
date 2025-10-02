@@ -1,5 +1,6 @@
 import { axiosInstance } from "@/lib/axios";
-import { useMutation } from "@tanstack/react-query";
+import { IAction } from "@/types/action";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
 type ISaveAction = {
   personId: string;
@@ -13,6 +14,20 @@ type IDeleteAction = {
 };
 
 export const ActionService = {
+  useAll: (deviceId: string) =>
+    useQuery<IAction[]>({
+      queryKey: ["action-all"],
+      queryFn: async () => {
+        const response = await axiosInstance.get("/action", {
+          params: {
+            device_id: deviceId,
+          },
+        });
+
+        return response.data as IAction[];
+      },
+    }),
+
   useSave: () =>
     useMutation({
       mutationFn: async (data: ISaveAction) => {
